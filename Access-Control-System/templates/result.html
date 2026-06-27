@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}BoolGuard — Result{% endblock %}
+
+{% block content %}
+<div class="page-center">
+  <div class="result-card {% if granted %}granted{% else %}denied{% endif %}">
+
+    <!-- Status header -->
+    <div class="result-header">
+      <div class="result-icon">{{ '✅' if granted else '🚫' }}</div>
+      <h1 class="result-title">{{ 'ACCESS GRANTED' if granted else 'ACCESS DENIED' }}</h1>
+      <p class="result-message">{{ message }}</p>
+      <div class="result-meta">
+        <span class="meta-chip">User: <b>{{ username }}</b></span>
+        <span class="meta-chip">Role:
+          <b class="role-{{ role }}">{{ role.upper() }}</b>
+        </span>
+      </div>
+    </div>
+
+    <!-- Boolean Logic Trace -->
+    <div class="trace-section">
+      <h2 class="trace-title">⬡ BOOLEAN EVALUATION TRACE</h2>
+      <p class="trace-sub">Step-by-step execution of Boolean Algebra gates</p>
+
+      <div class="trace-steps">
+        {% for step in steps %}
+        <div class="trace-step {{ 'step-true' if step.result else 'step-false' }}" style="animation-delay: {{ loop.index0 * 0.08 }}s">
+          <div class="step-left">
+            <span class="op-badge op-{{ step.op.lower() }}">{{ step.op }}</span>
+            <div class="step-info">
+              <div class="step-label">{{ step.label }}</div>
+              <code class="step-expr">{{ step.expression }}</code>
+            </div>
+          </div>
+          <div class="step-result {{ 'res-true' if step.result else 'res-false' }}">
+            {{ '1 (TRUE)' if step.result else '0 (FALSE)' }}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Final Boolean Expression -->
+    <div class="final-expr">
+      <div class="expr-label">FINAL BOOLEAN EXPRESSION</div>
+      {% if granted and role == 'admin' %}
+      <code class="expr-code">ACCESS = username_exists AND password_correct AND account_active AND is_admin AND otp_valid</code>
+      {% elif granted and role == 'user' %}
+      <code class="expr-code">ACCESS = username_exists AND password_correct AND account_active AND is_user</code>
+      {% elif granted and role == 'guest' %}
+      <code class="expr-code">ACCESS = (username_exists AND password_correct AND account_active) OR is_guest</code>
+      {% else %}
+      <code class="expr-code">ACCESS = FALSE &nbsp;→&nbsp; NOT(valid_credentials) OR NOT(account_active)</code>
+      {% endif %}
+      <div class="expr-result {{ 'expr-granted' if granted else 'expr-denied' }}">
+        = {{ '1 (ACCESS GRANTED)' if granted else '0 (ACCESS DENIED)' }}
+      </div>
+    </div>
+
+    <!-- Action buttons -->
+    <div class="result-actions">
+      <a href="{{ url_for('login') }}" class="btn-secondary">← TRY AGAIN</a>
+      {% if granted %}
+      <a href="{{ url_for('dashboard') }}" class="btn-primary">ENTER DASHBOARD →</a>
+      {% endif %}
+      <a href="{{ url_for('explain') }}" class="btn-secondary">THEORY ⬡</a>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

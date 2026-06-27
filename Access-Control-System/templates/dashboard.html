@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% block title %}BoolGuard — Dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard-page">
+
+  <div class="dash-header">
+    <div class="dash-welcome">
+      <span class="dash-icon">
+        {% if role == 'admin' %}👑{% elif role == 'user' %}🧑‍💻{% else %}👁️{% endif %}
+      </span>
+      <div>
+        <h1 class="dash-title">Welcome, {{ username.upper() }}</h1>
+        <p class="dash-role">Role: <span class="role-{{ role }}">{{ role.upper() }}</span>
+           &nbsp;|&nbsp; Access Level:
+           <b>{% if role=='admin' %}FULL{% elif role=='user' %}STANDARD{% else %}READ-ONLY{% endif %}</b>
+        </p>
+      </div>
+    </div>
+    <a href="{{ url_for('logout') }}" class="btn-logout">LOGOUT</a>
+  </div>
+
+  <!-- Access level visualizer -->
+  <div class="access-map">
+    <h2 class="section-title">ACCESS PRIVILEGES MAP</h2>
+    <div class="priv-grid">
+      {% set privs = [
+        ('View Public Data',    ['admin','user','guest'], '📄'),
+        ('View Reports',        ['admin','user'],         '📊'),
+        ('Edit Records',        ['admin','user'],         '✏️'),
+        ('Manage Users',        ['admin'],                '👥'),
+        ('System Settings',     ['admin'],                '⚙️'),
+        ('Security Logs',       ['admin'],                '🛡️'),
+      ] %}
+      {% for name, allowed_roles, icon in privs %}
+      <div class="priv-card {{ 'priv-allowed' if role in allowed_roles else 'priv-blocked' }}">
+        <span class="priv-icon">{{ icon }}</span>
+        <span class="priv-name">{{ name }}</span>
+        <span class="priv-status">{{ '✓ ALLOWED' if role in allowed_roles else '✗ DENIED' }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Boolean expression for this role -->
+  <div class="role-expr-section">
+    <h2 class="section-title">BOOLEAN EXPRESSION FOR YOUR ACCESS</h2>
+    <div class="role-expr-box">
+      {% if role == 'admin' %}
+      <p class="expr-desc">Admin access uses <b>AND</b> for all conditions and <b>XOR</b> for privilege escalation:</p>
+      <code class="expr-big">ACCESS = username ∧ password ∧ active ∧ is_admin∧otp_valid</code>
+      <code class="expr-big">FULL_PRIV = partial_admin ⊕ otp_valid</code>
+      {% elif role == 'user' %}
+      <p class="expr-desc">User access uses <b>AND</b> to combine credentials and role check:</p>
+      <code class="expr-big">ACCESS = username ∧ password ∧ active ∧ is_user</code>
+      {% else %}
+      <p class="expr-desc">Guest access uses <b>OR</b> — valid credentials OR recognized guest role:</p>
+      <code class="expr-big">ACCESS = (username ∧ password ∧ active) ∨ is_guest</code>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Truth table widget -->
+  <div class="truth-section">
+    <h2 class="section-title">INTERACTIVE TRUTH TABLES</h2>
+    <div class="gate-tabs">
+      <button class="gate-tab active" onclick="showTable('AND')">AND &nbsp;∧</button>
+      <button class="gate-tab" onclick="showTable('OR')">OR &nbsp;∨</button>
+      <button class="gate-tab" onclick="showTable('NOT')">NOT &nbsp;¬</button>
+      <button class="gate-tab" onclick="showTable('XOR')">XOR &nbsp;⊕</button>
+    </div>
+    <div class="truth-table-wrap" id="truthTableWrap">
+      <!-- Filled by JS -->
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function loadTables() {
+  const res = await fetch('/api/truth-table');
+  window.truthData = await res.json();
+  showTable('AND');
+}
+
+function showTable(gate) {
+  document.querySelectorAll('.gate-tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+
+  const data = window.truthData[gate];
+  const wrap = document.getElementById('truthTableWrap');
+
+  let html = '<table class="truth-table"><thead><tr>';
+  if (gate === 'NOT') {
+    html += '<th>A</th><th>¬A</th>';
+  } else {
+    html += '<th>A</th><th>B</th><th>A ' + (gate==='AND'?'∧':gate==='OR'?'∨':gate==='XOR'?'⊕':'') + ' B</th>';
+  }
+  html += '</tr></thead><tbody>';
+
+  data.forEach(row => {
+    html += '<tr>';
+    row.forEach((v, i) => {
+      const last = i === row.length - 1;
+      const cls  = last ? (v ? 'tt-true' : 'tt-false') : '';
+      html += `<td class="${cls}">${v}</td>`;
+    });
+    html += '</tr>';
+  });
+  html += '</tbody></table>';
+  html += `<div class="gate-desc">${gateDesc(gate)}</div>`;
+  wrap.innerHTML = html;
+}
+
+function gateDesc(g) {
+  const d = {
+    AND: 'Output is <b>1</b> only when <b>both</b> inputs are 1. Used in login: username <b>AND</b> password must both be correct.',
+    OR:  'Output is <b>1</b> when <b>at least one</b> input is 1. Used for guest: valid credentials <b>OR</b> is_guest.',
+    NOT: 'Output is the <b>inverse</b> of the input. Used to deny access when NOT(authorized).',
+    XOR: 'Output is <b>1</b> when inputs are <b>different</b>. Used to detect privilege escalation differences.',
+  };
+  return d[g];
+}
+
+loadTables();
+</script>
+{% endblock %}

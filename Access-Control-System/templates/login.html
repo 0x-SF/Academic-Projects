@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block title %}BoolGuard — Login{% endblock %}
+
+{% block content %}
+<div class="page-center">
+  <div class="login-card">
+    <!-- Header -->
+    <div class="card-header">
+      <div class="lock-icon">🔐</div>
+      <h1 class="card-title">ACCESS CONTROL</h1>
+      <p class="card-sub">Boolean Algebra Authentication System</p>
+    </div>
+
+    <!-- Boolean formula display -->
+    <div class="formula-bar">
+      <span class="formula-text">
+        ACCESS = (user <span class="op and">AND</span> pass) <span class="op and">AND</span> active
+        &nbsp;&nbsp;<span class="op or">OR</span>&nbsp;&nbsp;
+        <span class="op not">NOT</span>(banned)
+      </span>
+    </div>
+
+    <!-- Login form -->
+    <form method="POST" action="{{ url_for('login') }}" class="login-form" id="loginForm">
+
+      <div class="field-group">
+        <label class="field-label">USERNAME</label>
+        <div class="field-wrap">
+          <span class="field-icon">👤</span>
+          <input type="text" name="username" class="field-input"
+                 placeholder="SegFault / M-Khayat / Mohammed / banned"
+                 autocomplete="off" required />
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">PASSWORD</label>
+        <div class="field-wrap">
+          <span class="field-icon">🔑</span>
+          <input type="password" name="password" class="field-input"
+                 placeholder="Enter password" required />
+        </div>
+      </div>
+
+      <div class="field-group otp-group" id="otpGroup" style="display:none;">
+        <label class="field-label">OTP <span class="otp-hint">(SegFault only — use: 654321)</span></label>
+        <div class="field-wrap">
+          <span class="field-icon">🛡️</span>
+          <input type="text" name="otp" class="field-input otp-input"
+                 placeholder="6-digit code" maxlength="6" />
+        </div>
+      </div>
+
+      <button type="submit" class="submit-btn" id="submitBtn">
+        <span class="btn-text">AUTHENTICATE</span>
+        <span class="btn-arrow">→</span>
+      </button>
+    </form>
+
+    <!-- Demo credentials hint -->
+    <div class="demo-creds">
+      <div class="demo-title">DEMO CREDENTIALS</div>
+      <div class="creds-grid">
+        <div class="cred-row" onclick="fillCreds('SegFault','Admin@135',true)">
+          <span class="cred-badge admin">ADMIN</span>
+          <span class="cred-info">SegFault / Admin@135 + OTP:654321</span>
+        </div>
+        <div class="cred-row" onclick="fillCreds('M-khayat','Mm@121212',false)">
+          <span class="cred-badge user">USER</span>
+          <span class="cred-info">M-khayat / Mm@121212</span>
+        </div>
+        <div class="cred-row" onclick="fillCreds('Mohammed','try@12121',false)">
+          <span class="cred-badge guest">GUEST</span>
+          <span class="cred-info">Mohammed / try@12121</span>
+        </div>
+        <div class="cred-row" onclick="fillCreds('banned','banned',false)">
+          <span class="cred-badge banned">BANNED</span>
+          <span class="cred-info">banned / banned</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function fillCreds(user, pass, needsOtp) {
+  document.querySelector('[name=username]').value = user;
+  document.querySelector('[name=password]').value = pass;
+  const otpGroup = document.getElementById('otpGroup');
+  if (needsOtp) {
+    otpGroup.style.display = 'block';
+    document.querySelector('[name=otp]').value = '654321';
+  } else {
+    otpGroup.style.display = 'none';
+    document.querySelector('[name=otp]').value = '';
+  }
+}
+
+// Show OTP field when username is 'admin'
+document.querySelector('[name=username]').addEventListener('input', function() {
+  const otpGroup = document.getElementById('otpGroup');
+  otpGroup.style.display = this.value.trim().toLowerCase() === 'admin' ? 'block' : 'none';
+});
+</script>
+{% endblock %}

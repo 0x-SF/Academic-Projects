@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+{% block title %}BoolGuard — Boolean Theory{% endblock %}
+
+{% block content %}
+<div class="explain-page">
+  <div class="explain-hero">
+    <h1 class="explain-main-title">BOOLEAN ALGEBRA IN ACCESS CONTROL</h1>
+    <p class="explain-subtitle">How mathematical logic gates secure computer systems</p>
+  </div>
+
+  <!-- What is Boolean Algebra -->
+  <div class="theory-card">
+    <h2 class="theory-heading"><span class="th-num">01</span> What is Boolean Algebra?</h2>
+    <p>Boolean Algebra, developed by <b>George Boole</b> in 1854, is a branch of mathematics that operates on <b>binary values</b>: True (1) and False (0). Every decision a computer makes ultimately reduces to Boolean operations. In an Access Control System, it determines who gets in — and who doesn't.</p>
+    <div class="binary-strip">
+      <span>1</span><span>0</span><span>1</span><span>1</span><span>0</span><span>0</span><span>1</span><span>0</span><span>1</span><span>1</span><span>0</span><span>1</span>
+    </div>
+  </div>
+
+  <!-- The 4 Gates -->
+  <h2 class="section-title center-title">THE FOUR BOOLEAN GATES</h2>
+  <div class="gates-grid">
+
+    <div class="gate-card gate-and">
+      <div class="gate-symbol">∧</div>
+      <h3 class="gate-name">AND Gate</h3>
+      <p class="gate-python"><code>bool_AND(A, B) → A and B</code></p>
+      <p class="gate-desc">Output is TRUE only if <b>all</b> inputs are TRUE. In login: username AND password must both be correct.</p>
+      <div class="mini-truth">
+        <div class="mt-row hdr"><span>A</span><span>B</span><span>OUT</span></div>
+        <div class="mt-row"><span>0</span><span>0</span><span class="f">0</span></div>
+        <div class="mt-row"><span>0</span><span>1</span><span class="f">0</span></div>
+        <div class="mt-row"><span>1</span><span>0</span><span class="f">0</span></div>
+        <div class="mt-row"><span>1</span><span>1</span><span class="t">1</span></div>
+      </div>
+    </div>
+
+    <div class="gate-card gate-or">
+      <div class="gate-symbol">∨</div>
+      <h3 class="gate-name">OR Gate</h3>
+      <p class="gate-python"><code>bool_OR(A, B) → A or B</code></p>
+      <p class="gate-desc">Output is TRUE if <b>at least one</b> input is TRUE. Used for guest access: valid login OR recognized guest.</p>
+      <div class="mini-truth">
+        <div class="mt-row hdr"><span>A</span><span>B</span><span>OUT</span></div>
+        <div class="mt-row"><span>0</span><span>0</span><span class="f">0</span></div>
+        <div class="mt-row"><span>0</span><span>1</span><span class="t">1</span></div>
+        <div class="mt-row"><span>1</span><span>0</span><span class="t">1</span></div>
+        <div class="mt-row"><span>1</span><span>1</span><span class="t">1</span></div>
+      </div>
+    </div>
+
+    <div class="gate-card gate-not">
+      <div class="gate-symbol">¬</div>
+      <h3 class="gate-name">NOT Gate</h3>
+      <p class="gate-python"><code>bool_NOT(A) → not A</code></p>
+      <p class="gate-desc">Inverts the input. Used to deny access: <b>NOT</b>(authorized) means the user is blocked.</p>
+      <div class="mini-truth">
+        <div class="mt-row hdr"><span>A</span><span>OUT</span></div>
+        <div class="mt-row"><span>0</span><span class="t">1</span></div>
+        <div class="mt-row"><span>1</span><span class="f">0</span></div>
+      </div>
+    </div>
+
+    <div class="gate-card gate-xor">
+      <div class="gate-symbol">⊕</div>
+      <h3 class="gate-name">XOR Gate</h3>
+      <p class="gate-python"><code>bool_XOR(A, B) → A ^ B</code></p>
+      <p class="gate-desc">Output is TRUE only when inputs are <b>different</b>. Used to detect privilege escalation between partial and full admin access.</p>
+      <div class="mini-truth">
+        <div class="mt-row hdr"><span>A</span><span>B</span><span>OUT</span></div>
+        <div class="mt-row"><span>0</span><span>0</span><span class="f">0</span></div>
+        <div class="mt-row"><span>0</span><span>1</span><span class="t">1</span></div>
+        <div class="mt-row"><span>1</span><span>0</span><span class="t">1</span></div>
+        <div class="mt-row"><span>1</span><span>1</span><span class="f">0</span></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Flowchart -->
+  <div class="theory-card flowchart-section">
+    <h2 class="theory-heading"><span class="th-num">02</span> System Logic Flowchart</h2>
+    <div class="flowchart">
+      <div class="fc-node fc-start">START</div>
+      <div class="fc-arrow">↓</div>
+      <div class="fc-node fc-check">Enter Username & Password</div>
+      <div class="fc-arrow">↓</div>
+      <div class="fc-node fc-gate">AND Gate<br><small>username_exists AND password_correct AND active?</small></div>
+      <div class="fc-branch">
+        <div class="fc-branch-col">
+          <div class="fc-arrow-h">NO (0) ←</div>
+          <div class="fc-node fc-denied">🚫 ACCESS DENIED<br><small>NOT(valid) = TRUE</small></div>
+        </div>
+        <div class="fc-branch-col">
+          <div class="fc-arrow">→ YES (1)</div>
+          <div class="fc-node fc-check">Check Role</div>
+          <div class="fc-arrow">↓</div>
+          <div class="fc-roles">
+            <div class="fc-role-col">
+              <div class="fc-node fc-gate">Admin?<br><small>AND + OTP</small></div>
+              <div class="fc-arrow">↓</div>
+              <div class="fc-node fc-granted granted-admin">👑 FULL ACCESS</div>
+            </div>
+            <div class="fc-role-col">
+              <div class="fc-node fc-gate">User?<br><small>AND</small></div>
+              <div class="fc-arrow">↓</div>
+              <div class="fc-node fc-granted granted-user">🧑‍💻 USER ACCESS</div>
+            </div>
+            <div class="fc-role-col">
+              <div class="fc-node fc-gate">Guest?<br><small>OR</small></div>
+              <div class="fc-arrow">↓</div>
+              <div class="fc-node fc-granted granted-guest">👁️ GUEST ACCESS</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Team presentations -->
+  <div class="theory-card">
+    <h2 class="theory-heading"><span class="th-num">03</span> Team Presentation Guide</h2>
+    <div class="team-grid">
+      <div class="member-card">
+        <div class="member-num">44714789</div>
+        <div class="member-name">Mohammed Khayat</div>
+        <div class="member-topic">🔷 Introduction & Boolean Theory</div>
+        <p class="member-script">Introduce Boolean Algebra — its history, binary values (0/1), and the four operations: AND, OR, NOT, XOR. Explain how computers use these gates for every decision. Show the truth tables and relate them to real-world security scenarios.</p>
+      </div>
+      <div class="member-card">
+        <div class="member-num">44714014</div>
+        <div class="member-name">Nawaf Abdullah Al-Ameeri</div>
+        <div class="member-topic">🔷 System Architecture & Demo</div>
+        <p class="member-script">Present the Flask project structure. Explain the user database, password hashing, and session management. Live-demo the login flow for each role (Admin, User, Guest, Banned) and show the Boolean evaluation trace that appears after each login attempt.</p>
+      </div>
+      <div class="member-card">
+        <div class="member-num">44711569</div>
+        <div class="member-name">Mohammed Al-shaikh</div>
+        <div class="member-topic">🔷 Boolean Logic Engine & Conclusion</div>
+        <p class="member-script">Walk through the <code>evaluate_access()</code> function in app.py. Explain each Boolean gate: how AND combines credentials, how NOT blocks access, how OR allows guest login, and how XOR detects privilege differences. Conclude with real-world applications in cybersecurity.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="cta-bar">
+    <a href="{{ url_for('login') }}" class="btn-primary">TRY THE SYSTEM →</a>
+  </div>
+</div>
+{% endblock %}
